@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="db" uuid="8e214cef-bf79-485f-bd53-2b12929c8ea0">
+    <data-source source="LOCAL" name="db" uuid="0fa29c0e-8cb3-4516-8de1-7f0e2f3ee0f2">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:D:\projects\constructor_vo_api\db.sqlite3</jdbc-url>
+      <jdbc-url>jdbc:sqlite:C:\projects\python\constructor_vo_api\db.sqlite3</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
       <libraries>
         <library>

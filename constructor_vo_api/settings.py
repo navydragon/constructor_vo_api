@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'programs',
     'api',
     'users',
-    'products'
+    'products',
+    'competenceprofile'
 ]
 
 MIDDLEWARE = [

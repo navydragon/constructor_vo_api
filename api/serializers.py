@@ -4,6 +4,7 @@ from programs.models import EducationLevel, Direction, Program, ProgramRole, \
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from users.serializers import UserShortSerializer
+from products.serializers import ProductSerializer
 
 User = get_user_model()
 
@@ -70,3 +71,13 @@ class ProgramInformationSerializer(serializers.ModelSerializer):
         return f"{obj.direction_id.code} {obj.direction_id.name} {obj.profile} ({obj.level_id.name})"
 
 
+class ProgramProductSerializer(serializers.ModelSerializer):
+    products = ProductSerializer(many=True, read_only=True)
+    name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Program
+        fields = ('id', 'products', 'name')
+
+    def get_name(self, obj):
+        return f"{obj.direction_id.code} {obj.direction_id.name} {obj.profile} ({obj.level_id.name})"

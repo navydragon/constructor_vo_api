@@ -11,7 +11,7 @@ from rest_framework.decorators import action
 
 from .serializers import EducationLevelSerializer, EducationDirectionSerializer, \
     ProgramSerializer, ProgramRoleSerializer, ProgramUserSerializer,\
-    ProgramInformationSerializer
+    ProgramInformationSerializer, ProgramProductSerializer
 
 User = get_user_model()
 
@@ -33,6 +33,10 @@ class ProgramRoleListView(generics.ListAPIView):
 class ProgramInformationView(generics.RetrieveAPIView):
     queryset = Program.objects.prefetch_related('participants')
     serializer_class = ProgramInformationSerializer
+
+class ProgramProductView(generics.RetrieveAPIView):
+    queryset = Program.objects.prefetch_related('products')
+    serializer_class = ProgramProductSerializer
 
 class MyProgramsListView(generics.ListAPIView):
     serializer_class = ProgramInformationSerializer
