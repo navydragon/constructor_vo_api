@@ -49,8 +49,7 @@ class ProgramViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def list(self, request):
-        queryset = self.get_queryset() \
-            # .prefetch_related('participants')
+        queryset = self.get_queryset().prefetch_related('participants')
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 

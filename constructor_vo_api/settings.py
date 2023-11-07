@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'programs',
     'api',
     'users',
+    'products'
 ]
 
 MIDDLEWARE = [
@@ -153,7 +154,6 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'
 
 
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USERNAME_REQUIRED = False
