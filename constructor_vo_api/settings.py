@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'api',
     'users',
     'products',
-    'competenceprofile'
+    'competenceprofile',
+    'disciplines'
 ]
 
 MIDDLEWARE = [
