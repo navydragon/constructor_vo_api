@@ -2,15 +2,19 @@ from rest_framework import generics
 from programs.models import EducationLevel, Direction, Program, ProgramRole, \
     ProgramUser
 from rest_framework import viewsets
+from django.db.models import Prefetch
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
+from products.models import Product
+from products.serializers import ProductSerializer
+
 
 from .serializers import EducationLevelSerializer, EducationDirectionSerializer, \
-    ProgramSerializer, ProgramRoleSerializer, ProgramUserSerializer,\
+    ProgramSerializer, ProgramRoleSerializer, ProgramUserSerializer, \
     ProgramInformationSerializer, ProgramProductSerializer
 
 User = get_user_model()
@@ -30,22 +34,29 @@ class ProgramRoleListView(generics.ListAPIView):
     queryset = ProgramRole.objects.all()
     serializer_class = ProgramRoleSerializer
 
+
 class ProgramInformationView(generics.RetrieveAPIView):
     queryset = Program.objects.prefetch_related('participants')
     serializer_class = ProgramInformationSerializer
 
-class ProgramProductView(generics.RetrieveAPIView):
-    queryset = Program.objects.prefetch_related('products')
-    serializer_class = ProgramProductSerializer
+
 
 class MyProgramsListView(generics.ListAPIView):
     serializer_class = ProgramInformationSerializer
     permission_classes = [IsAuthenticated]
+
     def get_queryset(self):
         user_id = self.request.user.id
         return Program.objects.filter(
             participants__user_id=user_id).distinct().prefetch_related(
             'participants')
+
+    def get_serializer_context(self):
+        return {
+            'request': self.request,
+            'format': self.format_kwarg,
+        }
+
 
 class ProgramViewSet(viewsets.ModelViewSet):
     queryset = Program.objects.all()
@@ -53,6 +64,9 @@ class ProgramViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def list(self, request):
+        """
+        Получить список программ.
+        """
         queryset = self.get_queryset().prefetch_related('participants')
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
@@ -66,7 +80,12 @@ class ProgramViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data['program'])
         serializer.is_valid(raise_exception=True)
         serializer.save(author=request.user)
-        # self.perform_create(serializer)
+        user_id = get_object_or_404(User, id=request.user.id)
+        role_id = get_object_or_404(ProgramRole, id=1)
+        program_id = serializer.instance
+        ProgramUser.objects.create(program_id=program_id, user_id=user_id,
+                                   role_id=role_id)
+
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED,
                         headers=headers)
@@ -83,19 +102,21 @@ class ProgramViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, pk=None):
         program = self.get_object()
+        object_id = program.id
         program.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Успешно удалено', 'id':object_id}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'], name='Add Participant')
     def add_participant(self, request, pk=None):
         program = self.get_object()
-        data =  request.data.get('participant', {})
+        data = request.data.get('participant', {})
 
         user_id = get_object_or_404(User, id=data.get('user_id'))
         role_id = get_object_or_404(ProgramRole, id=data.get('role_id'))
 
         # Проверяем, существует ли уже участник с такой ролью в программе
-        if ProgramUser.objects.filter(program_id=program, user_id=user_id).exists():
+        if ProgramUser.objects.filter(program_id=program,
+                                      user_id=user_id).exists():
             return Response(
                 {'error': 'Пользователь уже имеет роль в этой программе.'},
                 status=status.HTTP_400_BAD_REQUEST)
@@ -139,3 +160,12 @@ class ProgramViewSet(viewsets.ModelViewSet):
         serializer = ProgramUserSerializer(program_users, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['get'], url_path='products_data')
+    def products_data (self, request, pk=None):
+        program = self.get_object()
+        products = Product.objects.filter(program_id=program).prefetch_related('stages__processes')
+        context = {'stages': True, 'processes': True}
+        serializer = ProductSerializer(products, many=True, context=context)
+
+        return Response(serializer.data)

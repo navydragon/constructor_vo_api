@@ -3,13 +3,14 @@ from rest_framework import generics
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
+from rest_framework.generics import ListAPIView
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
 from .models import Product, LifeStage, Process
-from .serializers import ProductSerializer, LifeStageSerializer, ProcessSerializer
+from .serializers import ProductSerializer, LifeStageSerializer, ProcessSerializer, ProcessCompetenceSerializer
 from django.db.models import F
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -64,6 +65,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         product = self.get_object()
+        object_id = product.id
         position_to_update = product.position
 
         self.perform_destroy(product)
@@ -71,7 +73,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         Product.objects.filter(position__gt=position_to_update).update(
             position=F('position') - 1)
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Успешно удалено', 'id':object_id}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['patch'], url_path='reorder')
     def reorder(self, request, program_id=None):
@@ -134,13 +136,13 @@ class LifeStageViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         stage = self.get_object()
         position_to_update = stage.position
-
+        object_id = stage.id
         self.perform_destroy(stage)
 
         LifeStage.objects.filter(position__gt=position_to_update).update(
             position=F('position') - 1)
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Успешно удалено', 'id':object_id}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['patch'], url_path='reorder')
     def reorder(self, request, product_id=None):
@@ -201,6 +203,7 @@ class ProcessViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         process = self.get_object()
+        object_id = process.id
         position_to_update = process.position
 
         self.perform_destroy(process)
@@ -208,7 +211,7 @@ class ProcessViewSet(viewsets.ModelViewSet):
         Process.objects.filter(position__gt=position_to_update).update(
             position=F('position') - 1)
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Успешно удалено', 'id':object_id}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['patch'], url_path='reorder')
     def reorder(self, request, stage_id=None):
@@ -222,3 +225,24 @@ class ProcessViewSet(viewsets.ModelViewSet):
         processes = Process.objects.filter(id__in=processes_order).order_by('position')
         serializer = ProcessSerializer(processes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ProcessListView(ListAPIView):
+    serializer_class = ProcessCompetenceSerializer
+    queryset = Process.objects.all()
+
+    def get_queryset(self):
+        program_id = self.kwargs.get('program_id')
+        if program_id is not None:
+            return Process.objects.filter(stage__product__program_id=program_id).order_by('stage__product__position','stage__position','position')
+        return Process.objects.none()
+
+    def list(self, request, *args, **kwargs):
+        program_id = self.kwargs.get('program_id')
+        if program_id is None:
+            return Response({'detail': 'Program ID is required'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

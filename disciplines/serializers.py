@@ -1,22 +1,38 @@
 from rest_framework import serializers
-from .models import Discipline
-from competenceprofile.serializers import KnowledgeSerializer
+from .models import Discipline, DisciplineKnowledge, Knowledge
+from competenceprofile.serializers import KnowledgeSerializer, AbilitySerializer
+
+
+class DisciplineKnowledgeSerializer(serializers.ModelSerializer):
+    dk_position = serializers.IntegerField(read_only=True)
+    id = serializers.IntegerField(source='knowledge.id', read_only=True)
+    name = serializers.CharField(source='knowledge.name', read_only=True)
+
+    class Meta:
+        model = DisciplineKnowledge
+        fields = ['id', 'name','dk_position']
+
+class DisciplineAbilitySerializer(serializers.ModelSerializer):
+    da_position = serializers.IntegerField(read_only=True)
+    id = serializers.IntegerField(source='ability.id', read_only=True)
+    name = serializers.CharField(source='ability.name', read_only=True)
+
+    class Meta:
+        model = DisciplineKnowledge
+        fields = ['id', 'name','da_position']
 
 class DisciplineSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=True, allow_blank=False)
     position = serializers.IntegerField(read_only=True)
     program_id = serializers.IntegerField()
-    knowledges = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    knowledges = DisciplineKnowledgeSerializer(many=True, read_only=True, source='disciplineknowledge_set')
+    abilities = DisciplineAbilitySerializer(many=True, read_only=True,
+                                               source='disciplineability_set')
 
     class Meta:
         model = Discipline
-        fields = ('id', 'name', 'position', 'program_id', 'knowledges')
+        # ields = '__all__'
+        fields = ('id', 'name', 'position', 'program_id', 'knowledges','abilities')
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
 
-        if 'knowledges' in self.context:
-            representation['knowledges'] = KnowledgeSerializer(
-                instance.knowledges.all(), many=True).data
-        return representation
 

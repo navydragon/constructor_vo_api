@@ -36,14 +36,17 @@ class ProgramUserSerializer(serializers.ModelSerializer):
 
 
 class ProgramSerializer(serializers.ModelSerializer):
-    direction = EducationDirectionSerializer(source='direction_id',
+    direction = EducationDirectionSerializer(source
+                                             ='direction_id',
                                              read_only=True)
     level = EducationLevelSerializer(source='level_id', read_only=True)
     participants = ProgramUserSerializer(many=True, read_only=True)
+    authorId = serializers.IntegerField(source='author_id', read_only=True)
+    my_role = serializers.SerializerMethodField()
 
     class Meta:
         model = Program
-        fields = ('id', 'profile', 'annotation', 'direction', 'level','participants')
+        fields = ('id', 'profile', 'annotation', 'direction', 'level','participants','my_role','authorId')
 
     def validate(self, attrs):
         direction_data = self.initial_data.get('direction')
@@ -55,29 +58,40 @@ class ProgramSerializer(serializers.ModelSerializer):
         attrs['level_id'] = level
         return attrs
 
+    def get_my_role(self, obj):
+        user_id = self.context['request'].user.id
+        roles = ProgramUser.objects.filter(user_id=user_id)
+        name = roles.first().role_id.name if roles.exists() else ''
+        return name
 
 class ProgramInformationSerializer(serializers.ModelSerializer):
     participants = ProgramUserSerializer(many=True, read_only=True)
     level = EducationLevelSerializer(source='level_id')
     name = serializers.SerializerMethodField()
+    my_role = serializers.SerializerMethodField()
     direction = EducationDirectionSerializer(source='direction_id')
     authorId = serializers.IntegerField(source='author_id', read_only=True)
 
     class Meta:
         model = Program
-        fields = ('id', 'profile', 'annotation', 'direction', 'level','participants','name', 'authorId')
+        fields = ('id', 'profile', 'annotation', 'direction', 'level','participants','name', 'authorId', 'my_role')
 
     def get_name(self, obj):
         return f"{obj.direction_id.code} {obj.direction_id.name} {obj.profile} ({obj.level_id.name})"
 
+    def get_my_role(self, obj):
+        user_id = self.context['request'].user.id
+        roles = ProgramUser.objects.filter(user_id=user_id)
+        name = roles.first().role_id.name if roles.exists() else ''
+        return name
+
 
 class ProgramProductSerializer(serializers.ModelSerializer):
-    products = ProductSerializer(many=True, read_only=True)
+    products = ProductSerializer(read_only=True,many=True)
     name = serializers.SerializerMethodField()
 
     class Meta:
         model = Program
         fields = ('id', 'products', 'name')
-
     def get_name(self, obj):
         return f"{obj.direction_id.code} {obj.direction_id.name} {obj.profile} ({obj.level_id.name})"

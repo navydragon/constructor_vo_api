@@ -10,6 +10,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .serializers import AbilitySerializer, KnowledgeSerializer
 from django.db.models import F
+from django.db import transaction
 
 
 class AbilityViewSet(viewsets.ModelViewSet):
@@ -50,22 +51,35 @@ class AbilityViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         ability = self.get_object()
+        object_id = ability.id
         position_to_update = ability.position
         Ability.objects.filter(position__gt=position_to_update).update(
             position=F('position') - 1)
+
+        processes = ability.processes.all()
+        with transaction.atomic():
+            for process in processes:
+                pa_position = process.abilities.through.objects.get(
+                    process_id=process.id,
+                    ability_id=ability.id
+                ).pa_position
+                process.update_pa_positions(pa_position)
         self.perform_destroy(ability)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response({'message': 'Успешно удалено', 'id':object_id}, status=status.HTTP_200_OK)
 
 
 class AttachAbilityView(APIView):
     def post(self, request, process_id, ability_id):
         process = get_object_or_404(Process, pk=process_id)
         ability = get_object_or_404(Ability, pk=ability_id)
+
         obj, created = process.abilities.through.objects.get_or_create(
             process_id=process.id,
-            ability_id=ability.id
+            ability_id=ability.id,
+            defaults={'pa_position': process.abilities.count() + 1}
         )
-
+        # process.abilities.add(ability, through_defaults={'pa_position': process.abilities.count() + 1})
         serializer = AbilitySerializer(ability)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -75,10 +89,21 @@ class DetachAbilityView(APIView):
         process = get_object_or_404(Process, pk=process_id)
         ability = get_object_or_404(Ability, pk=ability_id)
 
+        # Получаем позицию перед отсоединением
+        pa_position = process.abilities.through.objects.get(
+            process_id=process.id,
+            ability_id=ability.id
+        ).pa_position
+
+        # Отсоединяем способность
         process.abilities.remove(ability)
+
+        # Вызываем метод для обновления pa_position
+        process.update_pa_positions(pa_position)
 
         serializer = AbilitySerializer(ability)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 
 class CreateAbilityFromProcess(APIView):
@@ -93,7 +118,7 @@ class CreateAbilityFromProcess(APIView):
         serializer.is_valid(raise_exception=True)
         ability = serializer.save(position=program.abilities.count() + 1)
 
-        process.abilities.add(ability)
+        process.abilities.add(ability, through_defaults={'pa_position': process.abilities.count() + 1})
 
         serializer = AbilitySerializer(ability)
 
@@ -138,11 +163,22 @@ class KnowledgeViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         knowledge = self.get_object()
+        object_id = knowledge.id
         position_to_update = knowledge.position
         Knowledge.objects.filter(position__gt=position_to_update).update(
             position=F('position') - 1)
+
+        abilities = knowledge.abilities.all()
+        with transaction.atomic():
+            for ability in abilities:
+                ak_position = ability.knowledges.through.objects.get(
+                    ability_id=ability.id,
+                    knowledge_id=knowledge.id
+                ).ak_position
+                ability.update_ak_positions(ak_position)
+
         self.perform_destroy(knowledge)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Успешно удалено', 'id':object_id}, status=status.HTTP_200_OK)
 
 
 class AttachKnowledgeView(APIView):
@@ -151,7 +187,8 @@ class AttachKnowledgeView(APIView):
         knowledge = get_object_or_404(Knowledge, pk=knowledge_id)
         obj, created = ability.knowledges.through.objects.get_or_create(
             knowledge_id=knowledge.id,
-            ability_id=ability.id
+            ability_id=ability.id,
+            defaults={'ak_position': ability.knowledges.count() + 1}
         )
 
         serializer = KnowledgeSerializer(knowledge)
@@ -163,7 +200,17 @@ class DetachKnowledgeView(APIView):
         ability = get_object_or_404(Ability, pk=ability_id)
         knowledge = get_object_or_404(Knowledge, pk=knowledge_id)
 
+        # Получаем позицию перед отсоединением
+        ak_position = ability.knowledges.through.objects.get(
+            ability_id=ability.id,
+            knowledge_id=knowledge.id
+        ).ak_position
+
+        # Отсоединяем знание
         ability.knowledges.remove(knowledge)
+
+        # Вызываем метод для обновления ak_position
+        ability.update_ak_positions(ak_position)
 
         serializer = KnowledgeSerializer(knowledge)
 
@@ -182,7 +229,7 @@ class CreateKnowledgeFromAbility(APIView):
         serializer.is_valid(raise_exception=True)
         knowledge = serializer.save(position=program.knowledges.count() + 1)
 
-        ability.knowledges.add(knowledge)
+        ability.knowledges.add(knowledge, through_defaults={'ak_position': ability.knowledges.count() + 1})
 
         serializer = KnowledgeSerializer(knowledge)
 

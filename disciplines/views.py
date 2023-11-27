@@ -20,7 +20,7 @@ class DisciplineViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         program_id = self.kwargs.get('program_id')
         if program_id is not None:
-            return Discipline.objects.filter(program_id=program_id).order_by(
+            return Discipline.objects.filter(program_id=program_id).prefetch_related('disciplineknowledge_set').order_by(
                 'position')
         return Discipline.objects.all()
 
@@ -50,20 +50,23 @@ class DisciplineViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         discipline = self.get_object()
+        object_id = discipline.id
         position_to_update = discipline.position
         Discipline.objects.filter(position__gt=position_to_update).update(
             position=F('position') - 1)
         self.perform_destroy(discipline)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Успешно удалено', 'id':object_id}, status=status.HTTP_200_OK)
 
 
 class AttachKnowledgeToDisciplineView(APIView):
     def post(self, request, discipline_id, knowledge_id):
         discipline = get_object_or_404(Discipline, pk=discipline_id)
         knowledge = get_object_or_404(Knowledge, pk=knowledge_id)
+        current_knowledge_count = discipline.knowledges.count()
         obj, created = discipline.knowledges.through.objects.get_or_create(
             knowledge_id=knowledge.id,
-            discipline_id=discipline.id
+            discipline_id=discipline.id,
+            defaults={'position': current_knowledge_count + 1}
         )
         discipline = Discipline.objects.prefetch_related('knowledges').get(pk=discipline_id)
         serializer = DisciplineSerializer(discipline, context={'knowledges': True})
