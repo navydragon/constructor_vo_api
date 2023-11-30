@@ -12,7 +12,7 @@ from competenceprofile.views import AbilityViewSet, CreateAbilityFromProcess, \
     AttachKnowledgeView, DetachKnowledgeView
 
 from disciplines.views import DisciplineViewSet, AttachKnowledgeToDisciplineView, \
-DetachKnowledgeFromDisciplineView
+DetachKnowledgeFromDisciplineView, AttachAbilityToDisciplineView, DetachAbilityFromDisciplineView
 
 from assessment.views import QuestionViewSet, QuestionTypeListView
 
@@ -55,5 +55,7 @@ urlpatterns = [
 
     path('disciplines/<int:discipline_id>/attach_knowledge/<int:knowledge_id>/', AttachKnowledgeToDisciplineView.as_view()),
     path('disciplines/<int:discipline_id>/detach_knowledge/<int:knowledge_id>/', DetachKnowledgeFromDisciplineView.as_view()),
+    path('disciplines/<int:discipline_id>/attach_ability/<int:ability_id>/', AttachAbilityToDisciplineView.as_view()),
+    path('disciplines/<int:discipline_id>/detach_ability/<int:ability_id>/', DetachAbilityFromDisciplineView.as_view()),
 
 ] + router.urls

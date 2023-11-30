@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from competenceprofile.models import Knowledge
+from competenceprofile.models import Knowledge, Ability
 from programs.models import Program
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
@@ -9,6 +9,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Discipline
 from .serializers import DisciplineSerializer
+from competenceprofile.serializers import KnowledgeSerializer, AbilitySerializer
 from django.db.models import F
 
 
@@ -62,14 +63,13 @@ class AttachKnowledgeToDisciplineView(APIView):
     def post(self, request, discipline_id, knowledge_id):
         discipline = get_object_or_404(Discipline, pk=discipline_id)
         knowledge = get_object_or_404(Knowledge, pk=knowledge_id)
-        current_knowledge_count = discipline.knowledges.count()
         obj, created = discipline.knowledges.through.objects.get_or_create(
             knowledge_id=knowledge.id,
             discipline_id=discipline.id,
-            defaults={'position': current_knowledge_count + 1}
+            defaults={'dk_position': discipline.knowledges.count() + 1}
         )
-        discipline = Discipline.objects.prefetch_related('knowledges').get(pk=discipline_id)
-        serializer = DisciplineSerializer(discipline, context={'knowledges': True})
+        # discipline = Discipline.objects.prefetch_related('knowledges').get(pk=discipline_id)
+        serializer = KnowledgeSerializer(knowledge)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -80,6 +80,38 @@ class DetachKnowledgeFromDisciplineView(APIView):
 
         discipline.knowledges.remove(knowledge)
 
-        discipline = Discipline.objects.prefetch_related('knowledges').get(pk=discipline_id)
-        serializer = DisciplineSerializer(discipline, context={'knowledges': True})
+        # discipline = Discipline.objects.prefetch_related('knowledges').get(pk=discipline_id)
+        serializer = KnowledgeSerializer(knowledge)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class AttachAbilityToDisciplineView(APIView):
+    def post(self, request, discipline_id, ability_id):
+        discipline = get_object_or_404(Discipline, pk=discipline_id)
+        ability = get_object_or_404(Ability, pk=ability_id)
+        obj, created = discipline.abilities.through.objects.get_or_create(
+            ability_id=ability.id,
+            discipline_id=discipline.id,
+            defaults={'da_position': discipline.abilities.count() + 1}
+        )
+
+        for knowledge in ability.knowledges.all():
+            obj, created = discipline.knowledges.through.objects.get_or_create(
+                knowledge_id=knowledge.id,
+                discipline_id=discipline.id,
+                defaults={'dk_position': discipline.knowledges.count() + 1}
+            )
+
+        serializer = AbilitySerializer(Ability.objects.prefetch_related('disciplines','processes').get(pk=ability_id))
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class DetachAbilityFromDisciplineView(APIView):
+    def delete(self, request, discipline_id, ability_id):
+        discipline = get_object_or_404(Discipline, pk=discipline_id)
+        ability = get_object_or_404(Ability, pk=ability_id)
+
+        discipline.abilities.remove(ability_id)
+
+        serializer = AbilitySerializer(ability)
         return Response(serializer.data, status=status.HTTP_200_OK)
