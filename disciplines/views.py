@@ -21,9 +21,10 @@ class DisciplineViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         program_id = self.kwargs.get('program_id')
         if program_id is not None:
-            return Discipline.objects.filter(program_id=program_id).prefetch_related('disciplineknowledge_set').order_by(
-                'position')
-        return Discipline.objects.all()
+            queryset = Discipline.objects.filter(program_id=program_id)
+            queryset = queryset.prefetch_related('disciplineability_set','disciplineknowledge_set')
+            queryset = queryset.order_by('position')
+            return queryset
 
     def get_serializer_class(self):
 

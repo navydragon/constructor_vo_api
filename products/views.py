@@ -234,7 +234,11 @@ class ProcessListView(ListAPIView):
     def get_queryset(self):
         program_id = self.kwargs.get('program_id')
         if program_id is not None:
-            return Process.objects.filter(stage__product__program_id=program_id).select_related('stage__product').prefetch_related('processability_set').order_by('stage__product__position','stage__position','position')
+            queryset = Process.objects.filter(stage__product__program_id=program_id)
+            queryset = queryset.select_related('stage__product').prefetch_related(
+            'processability_set__ability__abilityknowledge_set')
+            queryset = queryset.order_by('stage__product__position','stage__position','position')
+            return queryset
         return Process.objects.none()
 
     def list(self, request, *args, **kwargs):
