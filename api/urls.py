@@ -4,7 +4,7 @@ from django.urls import include, path
 
 from .views import EducationLevelListView, EducationDirectionListView,\
     ProgramViewSet, ProgramRoleListView, ProgramInformationView, \
-    MyProgramsListView
+    MyProgramsListView, ProgramSemestersView
 
 from products.views import ProductViewSet, LifeStageViewSet, ProcessViewSet, ProcessListView
 from competenceprofile.views import AbilityViewSet, CreateAbilityFromProcess, \
@@ -12,8 +12,8 @@ from competenceprofile.views import AbilityViewSet, CreateAbilityFromProcess, \
     AttachKnowledgeView, DetachKnowledgeView
 
 from disciplines.views import DisciplineViewSet, AttachKnowledgeToDisciplineView, \
-DetachKnowledgeFromDisciplineView, AttachAbilityToDisciplineView, DetachAbilityFromDisciplineView
-
+DetachKnowledgeFromDisciplineView, AttachAbilityToDisciplineView, DetachAbilityFromDisciplineView, \
+AttachDisciplineToSemester, DetachDisciplineFromSemester, MoveDiscipline
 from assessment.views import QuestionViewSet, QuestionTypeListView
 
 from users.views import UserListView
@@ -44,6 +44,7 @@ urlpatterns = [
     path('users/', UserListView.as_view()),
 
     path('programs/<int:pk>/information/', ProgramInformationView.as_view()),
+    path('programs/<int:program_id>/semesters/', ProgramSemestersView.as_view()),
     path('programs/<int:program_id>/processes/', ProcessListView.as_view()),
     path('processes/<int:process_id>/attach_ability/<int:ability_id>/', AttachAbilityView.as_view()),
     path('processes/<int:process_id>/detach_ability/<int:ability_id>/', DetachAbilityView.as_view()),
@@ -57,5 +58,10 @@ urlpatterns = [
     path('disciplines/<int:discipline_id>/detach_knowledge/<int:knowledge_id>/', DetachKnowledgeFromDisciplineView.as_view()),
     path('disciplines/<int:discipline_id>/attach_ability/<int:ability_id>/', AttachAbilityToDisciplineView.as_view()),
     path('disciplines/<int:discipline_id>/detach_ability/<int:ability_id>/', DetachAbilityFromDisciplineView.as_view()),
+
+    path('semesters/<int:semester_id>/attach_discipline/<int:discipline_id>/', AttachDisciplineToSemester.as_view()),
+    path('semesters/<int:semester_id>/detach_discipline/<int:discipline_id>/', DetachDisciplineFromSemester.as_view()),
+    path('semesters/<int:source_id>/move_discipline/<int:discipline_id>/to/<int:destination_id>', MoveDiscipline.as_view()),
+
 
 ] + router.urls

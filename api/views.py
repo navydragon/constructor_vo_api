@@ -11,7 +11,8 @@ from rest_framework import status
 from rest_framework.decorators import action
 from products.models import Product
 from products.serializers import ProductSerializer
-
+from disciplines.serializers import SemesterSerializer
+from disciplines.models import Semester
 
 from .serializers import EducationLevelSerializer, EducationDirectionSerializer, \
     ProgramSerializer, ProgramRoleSerializer, ProgramUserSerializer, \
@@ -57,6 +58,30 @@ class MyProgramsListView(generics.ListAPIView):
             'format': self.format_kwarg,
         }
 
+
+class ProgramSemestersView(generics.ListAPIView):
+    serializer_class = SemesterSerializer
+
+    def get_queryset(self):
+        program_id = self.kwargs['program_id']
+        program = Program.objects.get(id=program_id)
+
+        # Проверяем, есть ли у программы семестры
+        if not program.semesters.exists():
+            # Если семестров нет, создаем их
+            self.create_semesters(program)
+
+        # Возвращаем семестры программы
+        return program.semesters.all()
+
+    def create_semesters(self, program):
+        for number in range(1, 9):
+            Semester.objects.create(program=program, number=number)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(serializer.data)
 
 class ProgramViewSet(viewsets.ModelViewSet):
     queryset = Program.objects.all()

@@ -21,3 +21,13 @@ class DisciplineAbility(models.Model):
     discipline = models.ForeignKey(Discipline, on_delete=models.CASCADE)
     ability = models.ForeignKey(Ability, on_delete=models.CASCADE)
     da_position = models.IntegerField(null=False)
+
+class Semester (models.Model):
+    program = models.ForeignKey(Program, on_delete=models.CASCADE, related_name='semesters')
+    number = models.PositiveIntegerField(null=False)
+    disciplines = models.ManyToManyField(Discipline, through='SemesterDiscipline', related_name='semesters')
+
+class SemesterDiscipline(models.Model):
+    semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    discipline = models.ForeignKey(Discipline, on_delete=models.CASCADE)
+    control = models.CharField(null=True, max_length=20)

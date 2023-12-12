@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import Discipline, DisciplineKnowledge, Knowledge
 
 from competenceprofile.serializers import KnowledgeSerializer, AbilitySerializer, AbilityKnowledgeSerializer
-
+from .models import Semester
 
 class DisciplineKnowledgeSerializer(serializers.ModelSerializer):
     dk_position = serializers.IntegerField(read_only=True)
@@ -37,4 +37,13 @@ class DisciplineSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'position', 'program_id', 'knowledges','abilities')
 
 
+class DisciplineShortSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Discipline
+        fields = ('id', 'name', 'position')
 
+class SemesterSerializer (serializers.ModelSerializer):
+    disciplines = DisciplineShortSerializer(many=True, read_only=True)
+    class Meta:
+        model = Semester
+        fields = ('__all__')

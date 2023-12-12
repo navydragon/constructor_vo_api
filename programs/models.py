@@ -42,6 +42,11 @@ class ProgramRole(models.Model):
 
 
 class Program(models.Model):
+    FORMS = [
+        ('Очная', 'Очная'),
+        ('Очно-заочная', 'Очно-заочная'),
+        ('Заочная', 'Заочная'),
+    ]
     profile = models.CharField(max_length=255)
     annotation = models.TextField(null=True, blank=True)
     author = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE, related_name='programs')
@@ -49,7 +54,12 @@ class Program(models.Model):
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
     level_id = models.ForeignKey('EducationLevel', on_delete=models.RESTRICT, default=1)
     direction_id = models.ForeignKey('Direction', on_delete=models.CASCADE, default=1)
-
+    form = models.CharField(
+        max_length=20,
+        choices=FORMS,
+        default='Очная'
+    )
+    max_semesters = models.PositiveIntegerField(null=True)
     class Meta:
         db_table = 'programs'
 

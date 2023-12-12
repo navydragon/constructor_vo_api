@@ -16,9 +16,15 @@ class EducationLevelSerializer(serializers.ModelSerializer):
 
 
 class EducationDirectionSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
     class Meta:
         model = Direction
         fields = ['id', 'code', 'name', 'level']
+
+    def get_name(self, obj):
+        # Объединяем значения полей code и name
+        return f"{obj.code} {obj.name}"
+
 
 
 class ProgramRoleSerializer(serializers.ModelSerializer):

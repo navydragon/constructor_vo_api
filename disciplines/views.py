@@ -7,15 +7,15 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from .models import Discipline
-from .serializers import DisciplineSerializer
+from .models import Discipline, Semester, SemesterDiscipline
+from .serializers import DisciplineSerializer, DisciplineShortSerializer
 from competenceprofile.serializers import KnowledgeSerializer, AbilitySerializer
 from django.db.models import F
 
 
 class DisciplineViewSet(viewsets.ModelViewSet):
     queryset = Discipline.objects.all()
-    serializer_class = DisciplineSerializer
+    #serializer_class =
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -24,6 +24,13 @@ class DisciplineViewSet(viewsets.ModelViewSet):
             return Discipline.objects.filter(program_id=program_id).prefetch_related('disciplineknowledge_set').order_by(
                 'position')
         return Discipline.objects.all()
+
+    def get_serializer_class(self):
+
+        if self.request.query_params.get('short'):
+            return DisciplineShortSerializer
+
+        return DisciplineSerializer
 
     def create(self, request, *args, **kwargs):
         discipline_data = request.data['discipline']
@@ -114,4 +121,41 @@ class DetachAbilityFromDisciplineView(APIView):
         discipline.abilities.remove(ability_id)
 
         serializer = AbilitySerializer(ability)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class AttachDisciplineToSemester (APIView):
+    def post(self, request, semester_id, discipline_id):
+        semester = get_object_or_404(Semester, pk=semester_id)
+        discipline = get_object_or_404(Discipline, pk=discipline_id)
+        obj, created = semester.disciplines.through.objects.get_or_create(
+            semester_id=semester.id,
+            discipline_id=discipline.id,
+        )
+
+        serializer = DisciplineShortSerializer(discipline)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class DetachDisciplineFromSemester (APIView):
+    def delete(self, request, semester_id, discipline_id):
+        semester = get_object_or_404(Semester, pk=semester_id)
+        discipline = get_object_or_404(Discipline, pk=discipline_id)
+
+        semester.disciplines.remove(discipline_id)
+
+        serializer = DisciplineShortSerializer(discipline)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class MoveDiscipline (APIView):
+
+    def patch(self, request, discipline_id, source_id, destination_id):
+        discipline = get_object_or_404(Discipline, pk=discipline_id)
+        source_semester = get_object_or_404(Semester, pk=source_id)
+        destination_semester = get_object_or_404(Semester, pk=destination_id)
+
+        SemesterDiscipline.objects.filter(discipline=discipline, semester=source_semester).delete()
+        SemesterDiscipline.objects.create(discipline=discipline, semester=destination_semester)
+
+        serializer = DisciplineShortSerializer(discipline)
         return Response(serializer.data, status=status.HTTP_200_OK)
