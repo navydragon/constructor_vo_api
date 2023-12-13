@@ -49,16 +49,24 @@ class ProgramSerializer(serializers.ModelSerializer):
     participants = ProgramUserSerializer(many=True, read_only=True)
     authorId = serializers.IntegerField(source='author_id', read_only=True)
     my_role = serializers.SerializerMethodField()
-
+    form = serializers.CharField(required=True)
     class Meta:
         model = Program
-        fields = ('id', 'profile', 'annotation', 'direction', 'level','participants','my_role','authorId')
+        fields = ('id', 'profile', 'annotation', 'level', 'direction', 'form', 'participants','my_role','authorId')
 
     def validate(self, attrs):
         direction_data = self.initial_data.get('direction')
-        lavel_data = self.initial_data.get('level')
+        # lavel_data = self.initial_data.get('level')
         direction = get_object_or_404(Direction, id=direction_data.get('id'))
-        level = get_object_or_404(EducationLevel, id=lavel_data.get('id'))
+
+        if '.03.' in direction.code:
+            level_id = 1
+        elif '.04.' in direction.code:
+            level_id = 3
+        else:
+            level_id = 2
+
+        level = get_object_or_404(EducationLevel, id=level_id)
 
         attrs['direction_id'] = direction
         attrs['level_id'] = level
@@ -80,7 +88,7 @@ class ProgramInformationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Program
-        fields = ('id', 'profile', 'annotation', 'direction', 'level','participants','name', 'authorId', 'my_role')
+        fields = ('id', 'profile','form', 'annotation', 'direction', 'level','participants','name', 'authorId', 'my_role')
 
     def get_name(self, obj):
         return f"{obj.direction_id.code} {obj.direction_id.name} {obj.profile} ({obj.level_id.name})"

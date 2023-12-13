@@ -61,7 +61,7 @@ urlpatterns = [
 
     path('semesters/<int:semester_id>/attach_discipline/<int:discipline_id>/', AttachDisciplineToSemester.as_view()),
     path('semesters/<int:semester_id>/detach_discipline/<int:discipline_id>/', DetachDisciplineFromSemester.as_view()),
-    path('semesters/<int:source_id>/move_discipline/<int:discipline_id>/to/<int:destination_id>', MoveDiscipline.as_view()),
+    path('semesters/<int:source_id>/move_discipline/<int:discipline_id>/to/<int:destination_id>/', MoveDiscipline.as_view()),
 
 
 ] + router.urls

@@ -33,6 +33,14 @@ class DisciplineViewSet(viewsets.ModelViewSet):
 
         return DisciplineSerializer
 
+    def get_serializer_context(self):
+        # Получаем базовый контекст сериализатора
+        context = super().get_serializer_context()
+
+        # Добавляем свои данные в контекст, например, x
+        context['x'] = 'with_semesters'  # Замените 'your_value' на актуальное значение
+
+        return context
     def create(self, request, *args, **kwargs):
         discipline_data = request.data['discipline']
         program_id = kwargs.get('program_id')

@@ -30,4 +30,5 @@ class Semester (models.Model):
 class SemesterDiscipline(models.Model):
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
     discipline = models.ForeignKey(Discipline, on_delete=models.CASCADE)
+    sd_position = models.IntegerField(null=False, default=0)
     control = models.CharField(null=True, max_length=20)

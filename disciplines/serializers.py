@@ -38,12 +38,42 @@ class DisciplineSerializer(serializers.ModelSerializer):
 
 
 class DisciplineShortSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
     class Meta:
         model = Discipline
-        fields = ('id', 'name', 'position')
+        fields = ('id', 'name')
+
+    def get_id(self, obj):
+        return str(obj.id)
+
+    def to_representation(self, instance):
+
+        data = super().to_representation(instance)
+
+        if 'x' in self.context:
+            semesters_field = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+            data['semesters'] = semesters_field.to_representation(instance.semesters.all())
+
+        return data
 
 class SemesterSerializer (serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
     disciplines = DisciplineShortSerializer(many=True, read_only=True)
     class Meta:
         model = Semester
         fields = ('__all__')
+
+    def get_id(self, obj):
+        return str(obj.id)
+
+    def to_representation(self, instance):
+        print("Serializer context:", self.context)
+
+        data = super().to_representation(instance)
+
+        if 'x' in self.context:
+
+            # Добавляем 'x' в представление
+            data['x'] = 'x'
+            disciplines = DisciplineShortSerializer(many=True, read_only=True, context=self.context)
+        return data
