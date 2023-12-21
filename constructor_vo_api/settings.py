@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'competenceprofile',
     'disciplines',
     'assessment',
+    'export',
 ]
 
 MIDDLEWARE = [
@@ -66,14 +67,13 @@ MIDDLEWARE = [
 
 
 
-
 ROOT_URLCONF = 'constructor_vo_api.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        # 'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [os.path.join(BASE_DIR, 'constructor_vo_api/templates'),os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -156,6 +156,8 @@ REST_FRAMEWORK = {
 REST_AUTH_SERIALIZERS = {
     # 'TOKEN_SERIALIZER': 'users.serializers.CustomTokenSerializer',
     'USER_DETAILS_SERIALIZER': 'users.serializers.CustomUserDetailsSerializer',
+    'PASSWORD_RESET_SERIALIZER': 'users.serializers.PasswordResetSerializer',
+
 }
 
 REST_AUTH_REGISTER_SERIALIZERS = {
@@ -166,7 +168,7 @@ AUTH_USER_MODEL = 'users.CustomUser'
 REST_USE_JWT = True
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 
-
+FRONT_END = os.getenv('FRONT_END')
 
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
@@ -174,7 +176,7 @@ ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USERNAME_REQUIRED = False
 
 AUTHENTICATION_BACKENDS = (
-    'allauth.account.auth_backends.AuthenticationBackend',
+   'allauth.account.auth_backends.AuthenticationBackend',
 )
 
 SIMPLE_JWT = {
@@ -201,3 +203,8 @@ SWAGGER_SETTINGS = {
         }
     }
 }
+
+#  подключаем движок filebased.EmailBackend
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+# указываем директорию, в которую будут складываться файлы писем
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')

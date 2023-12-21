@@ -1,5 +1,6 @@
 from django.urls import include, path
-
+# from rest_auth.views import PasswordResetConfirmView
+from dj_rest_auth.views import PasswordResetConfirmView, PasswordResetSerializer
 
 
 from .views import EducationLevelListView, EducationDirectionListView,\
@@ -15,7 +16,7 @@ from disciplines.views import DisciplineViewSet, AttachKnowledgeToDisciplineView
 DetachKnowledgeFromDisciplineView, AttachAbilityToDisciplineView, DetachAbilityFromDisciplineView, \
 AttachDisciplineToSemester, DetachDisciplineFromSemester, MoveDiscipline
 from assessment.views import QuestionViewSet, QuestionTypeListView
-
+from export.views import export_design
 from users.views import UserListView
 
 from rest_framework.routers import DefaultRouter
@@ -42,7 +43,8 @@ urlpatterns = [
     path('question_types/', QuestionTypeListView.as_view()),
 
     path('users/', UserListView.as_view()),
-
+    path('rest-auth/password/reset/confirm/', PasswordResetConfirmView.as_view(),
+           name='password_reset_confirm'),
     path('programs/<int:pk>/information/', ProgramInformationView.as_view()),
     path('programs/<int:program_id>/semesters/', ProgramSemestersView.as_view()),
     path('programs/<int:program_id>/processes/', ProcessListView.as_view()),
@@ -63,5 +65,6 @@ urlpatterns = [
     path('semesters/<int:semester_id>/detach_discipline/<int:discipline_id>/', DetachDisciplineFromSemester.as_view()),
     path('semesters/<int:source_id>/move_discipline/<int:discipline_id>/to/<int:destination_id>/', MoveDiscipline.as_view()),
 
+    path('programs/<int:program_id>/export/download_design', export_design, name='download_docx'),
 
 ] + router.urls
