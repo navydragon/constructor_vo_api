@@ -14,6 +14,8 @@ class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError('The Email field must be set')
+        extra_fields.setdefault('first_name', '')
+        extra_fields.setdefault('last_name', '')
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
@@ -46,7 +48,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     objects = CustomUserManager()
 
-
+    def get_username(self):
+        return self.email
 
     def __str__(self):
         return self.email

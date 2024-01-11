@@ -24,6 +24,16 @@ class CustomTokenSerializer(TokenSerializer):
 class CustomRegisterSerializer(RegisterSerializer):
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=True)
+    middle_name = serializers.CharField()
+
+    # @transaction.atomic
+    def save(self, request):
+        user = super().save(request)
+        user.first_name = self.data.get('first_name')
+        user.last_name = self.data.get('last_name')
+        user.middle_name = self.data.get('middle_name')
+        user.save()
+        return user
 
 
 class CustomUserDetailsSerializer(UserDetailsSerializer):

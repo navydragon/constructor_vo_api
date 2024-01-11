@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'allauth',
     'allauth.account',
+    'allauth.socialaccount',
     'dj_rest_auth.registration',
     'corsheaders',
     'drf_yasg',
@@ -157,7 +158,6 @@ REST_AUTH_SERIALIZERS = {
     # 'TOKEN_SERIALIZER': 'users.serializers.CustomTokenSerializer',
     'USER_DETAILS_SERIALIZER': 'users.serializers.CustomUserDetailsSerializer',
     'PASSWORD_RESET_SERIALIZER': 'users.serializers.PasswordResetSerializer',
-
 }
 
 REST_AUTH_REGISTER_SERIALIZERS = {
