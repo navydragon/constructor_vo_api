@@ -1,5 +1,4 @@
 from django.urls import include, path
-# from rest_auth.views import PasswordResetConfirmView
 from dj_rest_auth.views import PasswordResetConfirmView, PasswordResetSerializer
 
 
