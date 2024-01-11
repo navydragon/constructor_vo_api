@@ -211,6 +211,8 @@ EMAIL_PORT = os.getenv('EMAIL_PORT')
 EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+SERVER_EMAIL = os.getenv('EMAIL_HOST_USER')
+DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
 # DJ_AUTH_RESET_PASSWORD_CONFIRM = 'password/reset/confirm/'
 #EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
