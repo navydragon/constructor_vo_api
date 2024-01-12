@@ -22,7 +22,15 @@ class DisciplineViewSet(viewsets.ModelViewSet):
         program_id = self.kwargs.get('program_id')
         if program_id is not None:
             queryset = Discipline.objects.filter(program_id=program_id)
-            queryset = queryset.prefetch_related('disciplineability_set','disciplineknowledge_set')
+            queryset = queryset.prefetch_related(
+                'disciplineability_set__ability__disciplines',
+                'disciplineability_set__ability__abilityknowledge_set__knowledge__abilities',
+                'disciplineknowledge_set__knowledge__disciplines',
+                'knowledges',
+                'abilities',
+                #'disciplineknowledge_set__'
+            )
+            # queryset = queryset.prefetch_related('knowledges__disciplines','abilities__disciplines')
             queryset = queryset.order_by('position')
             return queryset
 

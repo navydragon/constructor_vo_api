@@ -27,14 +27,13 @@ class DisciplineSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=True, allow_blank=False)
     position = serializers.IntegerField(read_only=True)
     program_id = serializers.IntegerField()
-    knowledges = DisciplineKnowledgeSerializer(many=True, read_only=True, source='disciplineknowledge_set')
-    abilities = DisciplineAbilitySerializer(many=True, read_only=True,
-                                               source='disciplineability_set')
+    # knowledges = DisciplineKnowledgeSerializer(many=True, read_only=True, source='disciplineknowledge_set')
+    abilities = DisciplineAbilitySerializer(many=True, read_only=True,source='disciplineability_set')
 
     class Meta:
         model = Discipline
         # ields = '__all__'
-        fields = ('id', 'name', 'position', 'program_id', 'knowledges','abilities')
+        fields = ('id', 'name', 'position', 'program_id','abilities','knowledges')
 
 
 class DisciplineShortSerializer(serializers.ModelSerializer):

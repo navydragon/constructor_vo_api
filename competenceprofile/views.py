@@ -22,7 +22,7 @@ class AbilityViewSet(viewsets.ModelViewSet):
         program_id = self.kwargs.get('program_id')
         if program_id is not None:
             return Ability.objects.filter(program_id=program_id).order_by(
-                'position')
+                'position').prefetch_related('knowledges__questions','knowledges__abilities','knowledges__disciplines','processes','disciplines')
         return Ability.objects.all()
 
     def create(self, request, *args, **kwargs):
@@ -133,7 +133,7 @@ class KnowledgeViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         program_id = self.kwargs.get('program_id')
         if program_id is not None:
-            return Knowledge.objects.filter(program_id=program_id).order_by(
+            return Knowledge.objects.filter(program_id=program_id).prefetch_related('abilities','questions','disciplines').order_by(
                 'position')
         return Knowledge.objects.all()
 
