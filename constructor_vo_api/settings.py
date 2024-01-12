@@ -17,7 +17,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-x0%$2q@3n)5@ryidaskuko__4@oie$sx31b*m1x073_n)gd()v'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+
 
 ALLOWED_HOSTS = ['*']
 CORS_ORIGIN_ALLOW_ALL = True
@@ -102,6 +102,8 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT'),
     }
 }
+
+DEBUG = os.getenv('DEBUG', False)
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -219,3 +221,6 @@ DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
 # 'django.core.mail.backends.filebased.EmailBackend'
 # указываем директорию, в которую будут складываться файлы писем
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
+
+
+AUTH_PASSWORD_VALIDATORS = []
