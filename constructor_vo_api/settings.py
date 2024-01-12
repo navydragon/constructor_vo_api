@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'disciplines',
     'assessment',
     'export',
+    'debug_toolbar'
 ]
 
 MIDDLEWARE = [
@@ -63,10 +64,14 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
-
+INTERNAL_IPS = [
+    # ...
+    "127.0.0.1",
+    "10.242.224.106"
+]
 
 ROOT_URLCONF = 'constructor_vo_api.urls'
 
@@ -103,7 +108,7 @@ DATABASES = {
     }
 }
 
-DEBUG = os.getenv('DEBUG', False)
+DEBUG = os.getenv('DEBUG', False) == 'True'
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -153,6 +158,7 @@ REST_FRAMEWORK = {
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
 }
 

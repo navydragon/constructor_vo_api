@@ -88,7 +88,7 @@ class ProgramInformationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Program
-        fields = ('id', 'profile','form', 'annotation', 'direction', 'level','participants','name', 'authorId', 'my_role')
+        fields = ('id', 'profile','form', 'annotation','participants', 'direction', 'level','name', 'authorId', 'my_role')
 
     def get_name(self, obj):
         return f"{obj.direction_id.code} {obj.direction_id.name} {obj.profile} ({obj.level_id.name})"

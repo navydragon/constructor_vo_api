@@ -49,8 +49,7 @@ class MyProgramsListView(generics.ListAPIView):
     def get_queryset(self):
         user_id = self.request.user.id
         return Program.objects.filter(
-            participants__user_id=user_id).distinct().prefetch_related(
-            'participants')
+            participants__user_id=user_id).prefetch_related('participants').select_related('direction_id').select_related('level_id')
 
     def get_serializer_context(self):
         return {
