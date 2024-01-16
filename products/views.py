@@ -94,9 +94,12 @@ class LifeStageViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         product_id = self.kwargs.get('product_id')
+        queryset = LifeStage.objects.all()
+
         if product_id is not None:
-            return LifeStage.objects.filter(product_id=product_id).order_by('position')
-        return LifeStage.objects.all()
+            queryset = queryset.filter(product_id=product_id)
+
+        return queryset.order_by('position')
 
     def get_serializer_context(self):
         context = super().get_serializer_context()

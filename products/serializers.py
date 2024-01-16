@@ -38,6 +38,11 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = ('id', 'name', 'program', 'stages', 'position')
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['stages'] = sorted(data['stages'], key=lambda x: x.get('position', 0))
+        return data
+
 class ProcessCompetenceSerializer(serializers.ModelSerializer):
     abilities = ProcessAbilitySerializer(many=True, read_only=True, source='processability_set')
     stage = LifeStageShortSerializer()
