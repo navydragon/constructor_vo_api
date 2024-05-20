@@ -1,16 +1,32 @@
 from rest_framework import serializers
-from .models import Product, LifeStage, Process
+from .models import Product, LifeStage, Process, ProcessResult
 from programs.models import Program
 from competenceprofile.serializers import ProcessAbilitySerializer
 # from django.contrib.auth import get_user_model
 # User = get_user_model()
 
+class ProcessResultSerializer(serializers.ModelSerializer):
+    position = serializers.IntegerField(read_only=True)
+    product = serializers.IntegerField(read_only=True, source='process.stage.product.id')
+    stage = serializers.IntegerField(read_only=True, source='process.stage.id')
+    class Meta:
+        model = ProcessResult
+        fields = ('id', 'name','position','process','product','stage','description','base')
+
+class ProcessResultShortSerializer(serializers.ModelSerializer):
+    position = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = ProcessResult
+        fields = ('id', 'name','position','description','base')
+
 class ProcessSerializer(serializers.ModelSerializer):
     position = serializers.IntegerField(read_only=True)
     product = serializers.IntegerField(read_only=True, source='stage.product.id')
+    results = ProcessResultSerializer(many=True, read_only=True)
     class Meta:
         model = Process
-        fields = ('id', 'name', 'stage', 'position','product')
+        fields = ('id', 'name', 'stage', 'position','product','results')
 
 class LifeStageSerializer(serializers.ModelSerializer):
     position = serializers.IntegerField(read_only=True)
@@ -23,7 +39,7 @@ class LifeStageSerializer(serializers.ModelSerializer):
 class LifeStageShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = LifeStage
-        fields = ('id', 'name')
+        fields = ('id', 'name'  )
 
 class ProductShortSerializer(serializers.ModelSerializer):
     class Meta:
@@ -51,3 +67,14 @@ class ProcessCompetenceSerializer(serializers.ModelSerializer):
         model = Process
         fields = ('id', 'name', 'position', 'abilities','stage', 'product')
 
+
+class ProcessDisciplineSerializer(serializers.ModelSerializer):
+    results = ProcessResultShortSerializer(many=True, read_only=True)
+    class Meta:
+        model = Process
+        fields = ('id','name','disciplines','results')
+class LifeStageDisciplineSerializer (serializers.ModelSerializer):
+    processes = ProcessDisciplineSerializer(many=True, read_only=True)
+    class Meta:
+        model = LifeStage
+        fields = ('id', 'name', 'processes')

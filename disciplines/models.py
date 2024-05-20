@@ -1,7 +1,7 @@
 from django.db import models
 from competenceprofile.models import Knowledge, Ability
 from programs.models import Program
-
+from products.models import Process
 
 class Discipline(models.Model):
     name = models.TextField(null=False)
@@ -11,7 +11,7 @@ class Discipline(models.Model):
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
     knowledges = models.ManyToManyField(Knowledge, through='DisciplineKnowledge', related_name='disciplines')
     abilities = models.ManyToManyField(Ability, through='DisciplineAbility', related_name='disciplines')
-
+    processes = models.ManyToManyField(Process, related_name='disciplines')
 class DisciplineKnowledge(models.Model):
     discipline = models.ForeignKey(Discipline, on_delete=models.CASCADE)
     knowledge = models.ForeignKey(Knowledge, on_delete=models.CASCADE)

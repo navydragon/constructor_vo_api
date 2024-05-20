@@ -1,7 +1,6 @@
 from django.db import models
 from programs.models import Program
 
-
 class Product(models.Model):
     name = models.CharField(max_length=500)
     program = models.ForeignKey(Program, on_delete=models.CASCADE, related_name='products')
@@ -35,7 +34,6 @@ class Process(models.Model):
     position = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
-
     class Meta:
         db_table = 'processes'
 
@@ -51,3 +49,14 @@ class Process(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ProcessResult(models.Model):
+    name = models.TextField()
+    process = models.ForeignKey(Process, on_delete=models.CASCADE, related_name='results')
+    description = models.TextField(null=True, blank=True)
+    base = models.TextField(null=True, blank=True)
+    position = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+

@@ -9,8 +9,9 @@ from django.db import transaction
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
-from .models import Product, LifeStage, Process
-from .serializers import ProductSerializer, LifeStageSerializer, ProcessSerializer, ProcessCompetenceSerializer
+from .models import Product, LifeStage, Process, ProcessResult
+from .serializers import (ProductSerializer, LifeStageSerializer, ProcessSerializer, ProcessCompetenceSerializer,
+                          LifeStageDisciplineSerializer, ProcessResultSerializer)
 from django.db.models import F
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -230,6 +231,74 @@ class ProcessViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+
+class ProcessResultViewSet(viewsets.ModelViewSet):
+    queryset = ProcessResult.objects.all()
+    serializer_class = ProcessResultSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        process_id = self.kwargs.get('process_id')
+        if process_id is not None:
+            return ProcessResult.objects.filter(process_id=process_id).order_by('position')
+        return ProcessResult.objects.all()
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({'kwargs': self.kwargs})
+        return context
+
+    def create(self, request, *args, **kwargs):
+        result_data = request.data['result']
+        process_id = kwargs.get('process_id')
+        result_data['process'] = process_id
+        queryset = self.get_queryset()
+        position = queryset.count() + 1
+
+        serializer = self.get_serializer(data=result_data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(position=position)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED,
+                        headers=headers)
+
+    def partial_update(self, request, pk=None, *args, **kwargs):
+        result = self.get_object()
+        result_data = request.data['result']
+        process_id = kwargs.get('process_id')
+        result_data['process'] = process_id
+
+        serializer = self.get_serializer(result, data=result_data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, *args, **kwargs):
+        result = self.get_object()
+        object_id = result.id
+        position_to_update = result.position
+
+        self.perform_destroy(result)
+
+        ProcessResult.objects.filter(position__gt=position_to_update).update(
+            position=F('position') - 1)
+
+        return Response({'message': 'Успешно удалено', 'id': object_id}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['patch'], url_path='reorder')
+    def reorder(self, request, process_id=None):
+        results_order = request.data.get('results')
+        for result_id in results_order:
+            get_object_or_404(ProcessResult, id=result_id)
+        with transaction.atomic():
+            for position, result_id in enumerate(results_order, start=1):
+                ProcessResult.objects.filter(id=result_id).update(position=position)
+
+        results = ProcessResult.objects.filter(id__in=results_order).order_by('position')
+        serializer = ProcessResultSerializer(results, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 class ProcessListView(ListAPIView):
     serializer_class = ProcessCompetenceSerializer
     queryset = Process.objects.all()
@@ -248,6 +317,29 @@ class ProcessListView(ListAPIView):
             queryset = queryset.order_by('stage__product__position','stage__position','position')
             return queryset
         return Process.objects.none()
+
+    def list(self, request, *args, **kwargs):
+        program_id = self.kwargs.get('program_id')
+        if program_id is None:
+            return Response({'detail': 'Program ID is required'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        print (serializer.data)
+        return Response(serializer.data)
+
+class StageListView(ListAPIView):
+    serializer_class = LifeStageDisciplineSerializer
+    queryset = LifeStage.objects.all()
+
+    def get_queryset(self):
+        program_id = self.kwargs.get('program_id')
+        if program_id is not None:
+            queryset = LifeStage.objects.filter(product__program_id=program_id)
+            queryset = queryset.order_by('product__position','position')
+            return queryset
+        return LifeStage.objects.none()
 
     def list(self, request, *args, **kwargs):
         program_id = self.kwargs.get('program_id')

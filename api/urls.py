@@ -6,14 +6,14 @@ from .views import EducationLevelListView, EducationDirectionListView,\
     ProgramViewSet, ProgramRoleListView, ProgramInformationView, \
     MyProgramsListView, ProgramSemestersView
 
-from products.views import ProductViewSet, LifeStageViewSet, ProcessViewSet, ProcessListView
+from products.views import ProductViewSet, LifeStageViewSet, ProcessViewSet, ProcessResultViewSet, ProcessListView, StageListView
 from competenceprofile.views import AbilityViewSet, CreateAbilityFromProcess, \
     AttachAbilityView, DetachAbilityView, KnowledgeViewSet, CreateKnowledgeFromAbility, \
     AttachKnowledgeView, DetachKnowledgeView
 
 from disciplines.views import DisciplineViewSet, AttachKnowledgeToDisciplineView, \
 DetachKnowledgeFromDisciplineView, AttachAbilityToDisciplineView, DetachAbilityFromDisciplineView, \
-AttachDisciplineToSemester, DetachDisciplineFromSemester, MoveDiscipline
+AttachDisciplineToSemester, DetachDisciplineFromSemester, MoveDiscipline, CreateDisciplinesUP, CombineDisciplines
 from assessment.views import QuestionViewSet, QuestionTypeListView
 from export.views import export_design
 from users.views import UserListView
@@ -25,6 +25,7 @@ router.register(r'programs', ProgramViewSet)
 router.register(r'programs/(?P<program_id>\d+)/products', ProductViewSet)
 router.register(r'products/(?P<product_id>\d+)/stages', LifeStageViewSet)
 router.register(r'stages/(?P<stage_id>\d+)/processes', ProcessViewSet)
+router.register(r'processes/(?P<process_id>\d+)/results', ProcessResultViewSet)
 router.register(r'programs/(?P<program_id>\d+)/abilities', AbilityViewSet)
 router.register(r'programs/(?P<program_id>\d+)/knowledges', KnowledgeViewSet)
 router.register(r'programs/(?P<program_id>\d+)/disciplines', DisciplineViewSet)
@@ -47,6 +48,10 @@ urlpatterns = [
     path('programs/<int:pk>/information/', ProgramInformationView.as_view()),
     path('programs/<int:program_id>/semesters/', ProgramSemestersView.as_view()),
     path('programs/<int:program_id>/processes/', ProcessListView.as_view()),
+    path('programs/<int:program_id>/stages/', StageListView.as_view()),
+    path('programs/<int:program_id>/unassociated_processes/', CreateDisciplinesUP.as_view()),
+    path('programs/<int:program_id>/combine_disciplines/', CombineDisciplines.as_view()),
+
     path('processes/<int:process_id>/attach_ability/<int:ability_id>/', AttachAbilityView.as_view()),
     path('processes/<int:process_id>/detach_ability/<int:ability_id>/', DetachAbilityView.as_view()),
     path('processes/<int:process_id>/abilities/', CreateAbilityFromProcess.as_view()),

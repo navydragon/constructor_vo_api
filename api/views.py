@@ -11,7 +11,7 @@ from rest_framework import status
 from rest_framework.decorators import action
 from products.models import Product
 from products.serializers import ProductSerializer
-from disciplines.serializers import SemesterSerializer
+from disciplines.serializers import SemesterSerializer, SemesterShortSerializer
 from disciplines.models import Semester
 
 from .serializers import EducationLevelSerializer, EducationDirectionSerializer, \
@@ -59,7 +59,11 @@ class MyProgramsListView(generics.ListAPIView):
 
 
 class ProgramSemestersView(generics.ListAPIView):
-    serializer_class = SemesterSerializer
+
+    def get_serializer_class(self):
+        if self.request.query_params.get('short'):
+            return SemesterShortSerializer
+        return SemesterSerializer
 
     def get_queryset(self):
         program_id = self.kwargs['program_id']
@@ -79,7 +83,8 @@ class ProgramSemestersView(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        serializer = self.serializer_class(queryset, many=True)
+        serializer_class = self.get_serializer_class()
+        serializer = serializer_class(queryset, many=True)
         return Response(serializer.data)
 
 
@@ -189,7 +194,7 @@ class ProgramViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'], url_path='products_data')
     def products_data (self, request, pk=None):
         program = self.get_object()
-        products = Product.objects.filter(program_id=program).prefetch_related('stages__processes')
+        products = Product.objects.filter(program_id=program).prefetch_related('stages__processes__results')
         context = {'stages': True, 'processes': True}
         serializer = ProductSerializer(products, many=True, context=context)
 
