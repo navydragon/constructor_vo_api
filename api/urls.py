@@ -17,6 +17,7 @@ AttachDisciplineToSemester, DetachDisciplineFromSemester, MoveDiscipline, Create
 from assessment.views import QuestionViewSet, QuestionTypeListView
 from export.views import export_design
 from users.views import UserListView
+from programs.views import NsiTypeViewSet, MinistryViewSet, NsiViewSet
 
 from rest_framework.routers import DefaultRouter
 
@@ -30,6 +31,9 @@ router.register(r'programs/(?P<program_id>\d+)/abilities', AbilityViewSet)
 router.register(r'programs/(?P<program_id>\d+)/knowledges', KnowledgeViewSet)
 router.register(r'programs/(?P<program_id>\d+)/disciplines', DisciplineViewSet)
 router.register(r'knowledges/(?P<knowledge_id>\d+)/questions', QuestionViewSet)
+router.register(r'programs/(?P<program_id>\d+)/nsis', NsiViewSet)
+router.register(r'nsi_types', NsiTypeViewSet)
+router.register(r'ministries', MinistryViewSet)
 
 
 urlpatterns = [

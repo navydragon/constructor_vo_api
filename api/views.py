@@ -1,6 +1,6 @@
 from rest_framework import generics
 from programs.models import EducationLevel, Direction, Program, ProgramRole, \
-    ProgramUser
+    ProgramUser, Ministry
 from rest_framework import viewsets
 from django.db.models import Prefetch
 from rest_framework.permissions import IsAuthenticated
