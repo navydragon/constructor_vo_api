@@ -58,9 +58,11 @@ class AbilitySerializer(serializers.ModelSerializer):
                                                    many=True, read_only=True)
     discipline_id = serializers.PrimaryKeyRelatedField(source='disciplines',
                                                    many=True, read_only=True)
+
+    tasks_count = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Ability
-        fields = ('id', 'name', 'position', 'program_id', 'knowledges','parent_id','discipline_id')
+        fields = ('id', 'name', 'position', 'program_id', 'knowledges','parent_id','discipline_id', 'tasks_count')
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -71,6 +73,10 @@ class AbilitySerializer(serializers.ModelSerializer):
             representation['processes'] = ProcessSerializer(instance.processes.all(), many=True).data
 
         return representation
+
+    def get_tasks_count(self, obj):
+        # Получаем количество вопросов для данного объекта Knowledge
+        return obj.tasks.count()
 
 
 

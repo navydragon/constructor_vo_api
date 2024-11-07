@@ -1,13 +1,13 @@
 from rest_framework import serializers
-from .models import Question, QuestionType, Answer
+from .models import Question, QuestionType, Answer, Task
 from competenceprofile.serializers import KnowledgeSerializer
-from competenceprofile.models import Knowledge
+from competenceprofile.models import Knowledge, Ability
 
 
 class AnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
-        fields = ('id', 'text', 'is_correct')
+        fields = ('id', 'text','text2', 'is_correct')
 
 
 class QuestionTypeSerializer(serializers.ModelSerializer):
@@ -43,7 +43,7 @@ class QuestionSerializer(serializers.ModelSerializer):
         instance.question_type_id = question_type_id
         instance.save()
 
-        # instance.answers.all().delete()
+        instance.answers.all().delete()
         answers_data = validated_data.pop('answers', [])
         for answer_data in answers_data:
             Answer.objects.create(question=instance, **answer_data)
@@ -54,3 +54,17 @@ class QuestionSerializer(serializers.ModelSerializer):
         fields = (
         'id', 'text', 'knowledge_id', 'question_type_id', 'question_type',
         'answers')
+
+class TaskSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(required=True, allow_blank=False)
+    description = serializers.CharField(required=True, allow_blank=False)
+    ability_id = serializers.IntegerField()
+
+    class Meta:
+        model = Task
+        fields = (
+        'id', 'name', 'description', 'ability_id',
+        )
+
+    def create(self, validated_data):
+        return Task.objects.create(**validated_data)

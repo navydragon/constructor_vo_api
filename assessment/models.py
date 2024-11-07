@@ -2,7 +2,8 @@ from django.db import models
 import uuid
 
 from django.contrib.auth import get_user_model
-from competenceprofile.models import Knowledge
+from competenceprofile.models import Knowledge, Ability
+
 User = get_user_model()
 
 
@@ -41,3 +42,14 @@ class Answer(models.Model):
 
     def __str__(self):
         return f"{self.text} - {'(+)' if self.is_correct else '(-)'}"
+
+
+class Task(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    ability = models.ForeignKey(Ability, on_delete=models.CASCADE, related_name='tasks')
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    def __str__(self):
+        return self.name

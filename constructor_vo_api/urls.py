@@ -9,7 +9,7 @@ from rest_framework.authentication import TokenAuthentication
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="Your API",
+        title="Constructor VO API",
         default_version='v1',
         description="Your API description",
         terms_of_service="https://www.yourapp.com/terms/",

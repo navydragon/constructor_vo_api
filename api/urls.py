@@ -14,7 +14,7 @@ from competenceprofile.views import AbilityViewSet, CreateAbilityFromProcess, \
 from disciplines.views import DisciplineViewSet, AttachKnowledgeToDisciplineView, \
 DetachKnowledgeFromDisciplineView, AttachAbilityToDisciplineView, DetachAbilityFromDisciplineView, \
 AttachDisciplineToSemester, DetachDisciplineFromSemester, MoveDiscipline, CreateDisciplinesUP, CombineDisciplines
-from assessment.views import QuestionViewSet, QuestionTypeListView
+from assessment.views import QuestionViewSet, QuestionTypeListView, TaskViewSet, TaskListView
 from export.views import export_design
 from users.views import UserListView
 from programs.views import NsiTypeViewSet, MinistryViewSet, NsiViewSet
@@ -28,9 +28,11 @@ router.register(r'products/(?P<product_id>\d+)/stages', LifeStageViewSet)
 router.register(r'stages/(?P<stage_id>\d+)/processes', ProcessViewSet)
 router.register(r'processes/(?P<process_id>\d+)/results', ProcessResultViewSet)
 router.register(r'programs/(?P<program_id>\d+)/abilities', AbilityViewSet)
+
 router.register(r'programs/(?P<program_id>\d+)/knowledges', KnowledgeViewSet)
 router.register(r'programs/(?P<program_id>\d+)/disciplines', DisciplineViewSet)
 router.register(r'knowledges/(?P<knowledge_id>\d+)/questions', QuestionViewSet)
+router.register(r'abilities/(?P<ability_id>\d+)/tasks', TaskViewSet)
 router.register(r'programs/(?P<program_id>\d+)/nsis', NsiViewSet)
 router.register(r'nsi_types', NsiTypeViewSet)
 router.register(r'ministries', MinistryViewSet)
@@ -63,6 +65,8 @@ urlpatterns = [
     path('abilities/<int:ability_id>/attach_knowledge/<int:knowledge_id>/', AttachKnowledgeView.as_view()),
     path('abilities/<int:ability_id>/detach_knowledge/<int:knowledge_id>/', DetachKnowledgeView.as_view()),
     path('abilities/<int:ability_id>/knowledges/', CreateKnowledgeFromAbility.as_view()),
+
+    path('programs/<int:program_id>/tasks', TaskListView.as_view()),
 
     path('disciplines/<int:discipline_id>/attach_knowledge/<int:knowledge_id>/', AttachKnowledgeToDisciplineView.as_view()),
     path('disciplines/<int:discipline_id>/detach_knowledge/<int:knowledge_id>/', DetachKnowledgeFromDisciplineView.as_view()),
