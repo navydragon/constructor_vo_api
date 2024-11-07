@@ -66,7 +66,7 @@ urlpatterns = [
     path('abilities/<int:ability_id>/detach_knowledge/<int:knowledge_id>/', DetachKnowledgeView.as_view()),
     path('abilities/<int:ability_id>/knowledges/', CreateKnowledgeFromAbility.as_view()),
 
-    path('programs/<int:program_id>/tasks', TaskListView.as_view()),
+    path('programs/<int:program_id>/tasks/', TaskListView.as_view()),
 
     path('disciplines/<int:discipline_id>/attach_knowledge/<int:knowledge_id>/', AttachKnowledgeToDisciplineView.as_view()),
     path('disciplines/<int:discipline_id>/detach_knowledge/<int:knowledge_id>/', DetachKnowledgeFromDisciplineView.as_view()),
