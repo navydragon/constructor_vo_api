@@ -1,8 +1,8 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 
+GUEST = 'guest'
 USER = 'user'
-MODERATOR = 'moderator'
 ADMIN = 'admin'
 
 POSSIBLE_ROLES = [

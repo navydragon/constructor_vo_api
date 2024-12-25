@@ -25,6 +25,7 @@ class Question(models.Model):
     knowledge = models.ForeignKey(Knowledge, on_delete=models.CASCADE, related_name='questions')
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    image = models.FileField(null=True)
 
     def __str__(self):
         return self.text
@@ -39,6 +40,7 @@ class Answer(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
     position = models.IntegerField(default=0)
+    image = models.FileField(null=True)
 
     def __str__(self):
         return f"{self.text} - {'(+)' if self.is_correct else '(-)'}"
