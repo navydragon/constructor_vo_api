@@ -50,13 +50,13 @@ def export_design(request, program_id):
 
     table = doc.add_table(rows=process_count_for_program['process_count'], cols=3)
     table.style='Table Grid'
+
     doc.add_heading('Дисциплины', 1)
-    for index, ability in enumerate(program.abilities.all()):
-        ability_number = index + 1
-        doc.add_paragraph(f'{ability_number}. {ability.name}', style='List Bullet')
-        for kn_index, knowledge in enumerate(ability.knowledges.all()):
-            knowledge_number = kn_index + 1
-            doc.add_paragraph(f'{ability_number}.{knowledge_number} {knowledge.name}', style='List Bullet 2')
+    for index, semester in enumerate(program.semesters.order_by('number'), start=1):
+        doc.add_paragraph(f'Семестр №{semester.number}', style='List Bullet')
+
+        for disc_index, discipline in enumerate(semester.disciplines.all(), start=1):
+            doc.add_paragraph(f'{discipline.name}', style='List Bullet 2')
 
 
     # Сохраняем документ в BytesIO

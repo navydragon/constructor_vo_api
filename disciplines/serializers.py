@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Discipline, DisciplineKnowledge, Knowledge
+from .models import Discipline, DisciplineKnowledge, Knowledge, SemesterDiscipline
 
 from competenceprofile.serializers import KnowledgeSerializer, AbilitySerializer, AbilityKnowledgeSerializer
 from .models import Semester
@@ -53,10 +53,21 @@ class DisciplineCreateSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'program_id', 'process_id', 'semesters', 'processes')
 
 
+
+class SemesterDisciplineSerializer(serializers.ModelSerializer):
+    semester_number = serializers.IntegerField(source='semester.number')
+    name = serializers.CharField(source='discipline.name')
+    id = serializers.IntegerField(source='discipline.id')
+    class Meta:
+        model = SemesterDiscipline
+        fields = ('id','name','semester_number', 'zet', 'control')
+
 class DisciplineShortSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Discipline
-        fields = ('id', 'name')
+        fields = ('id', 'name', 'semesters')
+
 
 
 class SemesterShortSerializer(serializers.ModelSerializer):
@@ -72,22 +83,15 @@ class SemesterShortSerializer(serializers.ModelSerializer):
 
 class SemesterSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
-    disciplines = DisciplineShortSerializer(many=True, read_only=True)
+    disciplines = serializers.SerializerMethodField()
 
     class Meta:
         model = Semester
-        fields = ('__all__')
+        fields = ('id', 'name', 'disciplines')
 
     def get_name(self, instance):
-        return "Семестр №" + str(instance.id)
+        return "Семестр №" + str(instance.number)
 
-    def to_representation(self, instance):
-        print("Serializer context:", self.context)
-
-        data = super().to_representation(instance)
-
-        if 'x' in self.context:
-            # Добавляем 'x' в представление
-            data['x'] = 'x'
-            disciplines = DisciplineShortSerializer(many=True, read_only=True, context=self.context)
-        return data
+    def get_disciplines(self, instance):
+        semester_disciplines = SemesterDiscipline.objects.filter(semester=instance)
+        return SemesterDisciplineSerializer(semester_disciplines, many=True).data

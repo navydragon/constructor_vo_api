@@ -78,8 +78,28 @@ class ProgramSemestersView(generics.ListAPIView):
         return program.semesters.all()
 
     def create_semesters(self, program):
-        for number in range(1, 9):
-            Semester.objects.create(program=program, number=number)
+        level = program.level_id
+
+        # Определяем количество семестров в зависимости от уровня образования
+        if level.name == 'Бакалавриат':
+            semesters_count = 8
+        elif level.name == 'Специалитет':
+            semesters_count = 10
+        elif level.name == 'Магистратура':
+            semesters_count = 4
+        else:
+            return Response({"error": "Неизвестный уровень образования."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Учитываем форму обучения
+        if program.form == 'Очно-заочная':
+            semesters_count += 1
+        elif program.form == 'Заочная':
+            semesters_count += 2
+
+        # Создаем семестры
+        for i in range(1, semesters_count + 1):
+            Semester.objects.create(program=program, number=i)
+
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()

@@ -9,11 +9,12 @@ from rest_framework import viewsets
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Discipline, Semester, SemesterDiscipline
-from .serializers import DisciplineSerializer, DisciplineShortSerializer, DisciplineCreateSerializer
+from .serializers import DisciplineSerializer, DisciplineShortSerializer, DisciplineCreateSerializer, \
+    SemesterDisciplineSerializer
 from competenceprofile.serializers import KnowledgeSerializer, AbilitySerializer
 from django.db.models import F
 from django.http import JsonResponse
-
+from rest_framework.exceptions import ValidationError
 
 
 class DisciplineViewSet(viewsets.ModelViewSet):
@@ -156,14 +157,30 @@ class DetachAbilityFromDisciplineView(APIView):
 
 class AttachDisciplineToSemester (APIView):
     def post(self, request, semester_id, discipline_id):
+        # Получаем семестр и дисциплину
         semester = get_object_or_404(Semester, pk=semester_id)
         discipline = get_object_or_404(Discipline, pk=discipline_id)
-        obj, created = semester.disciplines.through.objects.get_or_create(
+
+        # Получаем zet и control из тела запроса
+        zet = request.data.get('zet')
+        control = request.data.get('control')
+
+        # Проверка обязательности полей zet и control
+        if zet is None or control is None:
+            raise ValidationError({'detail': 'Поля zet и control обязательны.'})
+
+        # Создаём или обновляем запись в SemesterDiscipline
+        obj, created = SemesterDiscipline.objects.update_or_create(
             semester_id=semester.id,
             discipline_id=discipline.id,
+            defaults={
+                'zet': zet,
+                'control': control,
+            }
         )
 
-        serializer = DisciplineShortSerializer(discipline)
+        # Сериализуем и возвращаем данные дисциплины
+        serializer = SemesterDisciplineSerializer(obj)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class DetachDisciplineFromSemester (APIView):
