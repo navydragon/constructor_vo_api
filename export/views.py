@@ -45,11 +45,20 @@ def export_design(request, program_id):
 
     doc.add_heading('Сопоставление процессов со знаниями и умениями', 2)
 
-    process_count_for_program = Program.objects.filter(id=program_id).aggregate(process_count=Count('products__stages__processes'))
+    for product in program.products.order_by('position'):
+        for stage in product.stages.order_by('position'):
+            for process in stage.processes.order_by('position'):
+                doc.add_paragraph(f'Процесс: {process.name}', style='List Bullet')
+                for ability in process.abilities.order_by('postion'):
+                    doc.add_paragraph(f'Умение: {ability.name}', style='List Bullet 2')
+                    for knowledge in ability.knowledges.order_by('position'):
+                        doc.add_paragraph(f'Знание: {knowledge.name}', style='List Bullet 3')
+
+    # process_count_for_program = Program.objects.filter(id=program_id).aggregate(process_count=Count('products__stages__processes'))
 
 
-    table = doc.add_table(rows=process_count_for_program['process_count'], cols=3)
-    table.style='Table Grid'
+    # table = doc.add_table(rows=process_count_for_program['process_count'], cols=3)
+    # table.style='Table Grid'
 
     doc.add_heading('Дисциплины', 1)
     for index, semester in enumerate(program.semesters.order_by('number'), start=1):
@@ -57,6 +66,7 @@ def export_design(request, program_id):
 
         for disc_index, discipline in enumerate(semester.disciplines.all(), start=1):
             doc.add_paragraph(f'{discipline.name}', style='List Bullet 2')
+
 
 
     # Сохраняем документ в BytesIO

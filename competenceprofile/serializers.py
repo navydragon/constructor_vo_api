@@ -39,13 +39,16 @@ class ProcessAbilitySerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(source='ability.id', read_only=True)
     name = serializers.CharField(source='ability.name', read_only=True)
     knowledges = AbilityKnowledgeSerializer(source='ability.abilityknowledge_set', many=True, read_only=True)
-
+    # processes_count = serializers.SerializerMethodField()
     parent_id = serializers.PrimaryKeyRelatedField(source='ability.processes',many=True, read_only=True)
+
     class Meta:
         model = ProcessAbility
         fields = ['id', 'name','pa_position','knowledges','parent_id']
 
-
+    def get_processes_count(self, obj):
+        # Получаем количество processes, связанных с текущим ability
+        return obj.ability.processes.count()
 
 
 
