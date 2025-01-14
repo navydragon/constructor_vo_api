@@ -49,7 +49,7 @@ def export_design(request, program_id):
         for stage in product.stages.order_by('position'):
             for process in stage.processes.order_by('position'):
                 doc.add_paragraph(f'Процесс: {process.name}', style='List Bullet')
-                for ability in process.abilities.order_by('postion'):
+                for ability in process.abilities.order_by('position'):
                     doc.add_paragraph(f'Умение: {ability.name}', style='List Bullet 2')
                     for knowledge in ability.knowledges.order_by('position'):
                         doc.add_paragraph(f'Знание: {knowledge.name}', style='List Bullet 3')
