@@ -1,5 +1,5 @@
 from django.db import models
-from programs.models import Program
+from programs.models import Program, Nsi
 
 class Product(models.Model):
     name = models.CharField(max_length=500)
@@ -7,6 +7,7 @@ class Product(models.Model):
     position = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    nsis = models.ManyToManyField(Nsi, related_name='products', blank=True)
 
     class Meta:
         db_table = 'products'
@@ -20,6 +21,7 @@ class LifeStage(models.Model):
     position = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    nsis = models.ManyToManyField(Nsi, related_name='stages', blank=True)
 
     class Meta:
         db_table = 'life_stages'
@@ -34,6 +36,8 @@ class Process(models.Model):
     position = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    nsis = models.ManyToManyField(Nsi, related_name='processes', blank=True)
+
     class Meta:
         db_table = 'processes'
 

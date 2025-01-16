@@ -1,4 +1,6 @@
 from rest_framework import serializers
+
+from products.models import Product
 from programs.models import NsiType, Ministry, Nsi
 
 class NsiTypeSerializer(serializers.ModelSerializer):
@@ -14,7 +16,7 @@ class MinistrySerializer(serializers.ModelSerializer):
 class NsiSerializer(serializers.ModelSerializer):
     nsiDate = serializers.DateField(allow_null=True, required=False)
     nsiProtocolDate = serializers.DateField(allow_null=True, required=False)
-    nsiYear = serializers.DateField(allow_null=True, required=False)
+    nsiYear = serializers.IntegerField(allow_null=True, required=False)
 
     class Meta:
         model = Nsi
@@ -25,3 +27,6 @@ class NsiSerializer(serializers.ModelSerializer):
             if data.get(field) == '':
                 data[field] = None
         return super().to_internal_value(data)
+
+
+

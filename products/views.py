@@ -9,6 +9,8 @@ from django.db import transaction
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
+
+from programs.models import Nsi
 from .models import Product, LifeStage, Process, ProcessResult
 from .serializers import (ProductSerializer, LifeStageSerializer, ProcessSerializer, ProcessCompetenceSerializer,
                           LifeStageDisciplineSerializer, ProcessResultSerializer)
@@ -44,7 +46,12 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(data=product_data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(position=position)
+
+        product = serializer.save(position=position)
+        if product_data['nsis']:
+            nsis = Nsi.objects.filter(id__in=product_data['nsis'])
+            product.nsis.set(nsis)
+
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED,
                         headers=headers)
@@ -61,7 +68,13 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         if serializer.is_valid():
             serializer.save()
+            if product_data['nsis']:
+                product.nsis.clear()
+                nsis = Nsi.objects.filter(id__in=product_data['nsis'])
+                product.nsis.set(nsis)
+
             return Response(serializer.data)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, *args, **kwargs):
@@ -87,6 +100,17 @@ class ProductViewSet(viewsets.ModelViewSet):
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=['patch'], url_path='sync_nsis')
+    def sync_nsis(self, request,program_id, pk):
+        nsis_ids = request.data.get("nsis", [])
+        product = get_object_or_404(Product, id=pk)
+
+        product.nsis.clear()
+        nsis = Nsi.objects.filter(id__in=nsis_ids)
+        product.nsis.set(nsis)  # Устанавливаем только указанные связи
+
+        serializer = ProductSerializer(product)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class LifeStageViewSet(viewsets.ModelViewSet):
     queryset = LifeStage.objects.all()
@@ -299,6 +323,8 @@ class ProcessResultViewSet(viewsets.ModelViewSet):
         results = ProcessResult.objects.filter(id__in=results_order).order_by('position')
         serializer = ProcessResultSerializer(results, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class ProcessListView(ListAPIView):
     serializer_class = ProcessCompetenceSerializer
     queryset = Process.objects.all()

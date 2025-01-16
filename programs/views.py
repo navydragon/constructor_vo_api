@@ -41,7 +41,7 @@ class NsiViewSet(viewsets.ModelViewSet):
             raise ValidationError(f'Program with id {program_id} does not exist')
 
         nsi_data['program'] = program_id
-
+        nsi_data['type'] = nsi_data['type_id']
         serializer = self.get_serializer(data=nsi_data)
         serializer.is_valid(raise_exception=True)
         serializer.save(program=program,author=author)
@@ -67,4 +67,4 @@ class NsiViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Успешно удалено', 'id':instance.id}, status=status.HTTP_200_OK)

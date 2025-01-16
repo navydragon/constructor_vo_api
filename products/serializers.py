@@ -1,6 +1,8 @@
 from rest_framework import serializers
+
+from programs.serializers import NsiSerializer
 from .models import Product, LifeStage, Process, ProcessResult
-from programs.models import Program
+from programs.models import Program, Nsi
 from competenceprofile.serializers import ProcessAbilitySerializer
 # from django.contrib.auth import get_user_model
 # User = get_user_model()
@@ -24,6 +26,8 @@ class ProcessSerializer(serializers.ModelSerializer):
     position = serializers.IntegerField(read_only=True)
     product = serializers.IntegerField(read_only=True, source='stage.product.id')
     results = ProcessResultSerializer(many=True, read_only=True)
+
+
     class Meta:
         model = Process
         fields = ('id', 'name', 'stage', 'position','product','results')
@@ -50,9 +54,10 @@ class ProductSerializer(serializers.ModelSerializer):
     position = serializers.IntegerField(read_only=True)
     program = serializers.PrimaryKeyRelatedField(write_only=True, queryset=Program.objects.all())
     stages = LifeStageSerializer(many=True, read_only=True)
+    nsis = NsiSerializer(many=True, read_only=True)
     class Meta:
         model = Product
-        fields = ('id', 'name', 'program', 'stages', 'position')
+        fields = ('id', 'name', 'program', 'stages', 'position','nsis')
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -63,9 +68,21 @@ class ProcessCompetenceSerializer(serializers.ModelSerializer):
     abilities = ProcessAbilitySerializer(many=True, read_only=True, source='processability_set')
     stage = LifeStageShortSerializer()
     product = ProductShortSerializer(source='stage.product')
+    nsis = serializers.SerializerMethodField()
+
     class Meta:
         model = Process
-        fields = ('id', 'name', 'position', 'abilities','stage', 'product')
+        fields = ('id', 'name', 'position', 'abilities','stage', 'product','nsis')
+
+
+    def get_nsis(self, obj):
+        # Извлекаем все связанные NSI через Product
+        products = Product.objects.filter(
+            stages__processes=obj
+        ).distinct()
+        nsis = Nsi.objects.filter(products__in=products).distinct()
+
+        return [{"id": nsi.id, "nsiFullName": nsi.nsiFullName, "type": nsi.type_id} for nsi in nsis]
 
 
 class ProcessDisciplineSerializer(serializers.ModelSerializer):

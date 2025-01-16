@@ -1,4 +1,7 @@
 from rest_framework import serializers
+
+from products.models import Product
+from programs.models import Nsi
 from .models import Ability, Knowledge, ProcessAbility, AbilityKnowledge
 
 
@@ -9,6 +12,7 @@ class KnowledgeSerializer(serializers.ModelSerializer):
     questions_count = serializers.SerializerMethodField(read_only=True)
     parent_id = serializers.PrimaryKeyRelatedField(source='abilities',read_only=True, many=True)
     discipline_id = serializers.PrimaryKeyRelatedField(source='disciplines',read_only=True, many=True)
+
     class Meta:
         model = Knowledge
         fields = ('id', 'name', 'position', 'program_id', 'questions_count','parent_id','discipline_id')
@@ -16,10 +20,14 @@ class KnowledgeSerializer(serializers.ModelSerializer):
     def get_questions_count(self, obj):
         # Получаем количество вопросов для данного объекта Knowledge
         return obj.questions.count()
+
+
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         if 'abilities' in self.context:
             representation['abilities'] = AbilitySerializer(instance.abilities.all(), many=True).data
+
 
         return representation
 
