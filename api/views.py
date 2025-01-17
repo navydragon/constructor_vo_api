@@ -136,7 +136,14 @@ class ProgramViewSet(viewsets.ModelViewSet):
         ProgramUser.objects.create(program_id=program_id, user_id=user_id,
                                    role_id=role_id)
 
+        for i in range(1, program_id.max_semesters + 1):
+            Semester.objects.create(program=program_id, number=i)
+
         headers = self.get_success_headers(serializer.data)
+
+        # for i in range(1, program.max_semesters + 1):
+        #    Semester.objects.create(program=program, number=i)
+
         return Response(serializer.data, status=status.HTTP_201_CREATED,
                         headers=headers)
 
@@ -146,7 +153,20 @@ class ProgramViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(program, data=data)
 
         if serializer.is_valid():
+            old_max_semesters = program.max_semesters
+            new_max_semesters = data.get('max_semesters', old_max_semesters)
+
             serializer.save()
+
+            if new_max_semesters > old_max_semesters:
+                for i in range(old_max_semesters + 1, new_max_semesters + 1):
+                    Semester.objects.create(program=program, number=i)
+
+                # Если новое значение max_semesters меньше старого, удаляем лишние семестры
+            elif new_max_semesters < old_max_semesters:
+                semesters_to_remove = Semester.objects.filter(program=program, number__gt=new_max_semesters)
+                semesters_to_remove.delete()
+
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

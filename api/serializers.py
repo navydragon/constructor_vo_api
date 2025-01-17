@@ -51,9 +51,11 @@ class ProgramSerializer(serializers.ModelSerializer):
     my_role = serializers.SerializerMethodField()
     form = serializers.CharField(required=True)
     type = serializers.IntegerField(required=True)
+    max_semesters = serializers.IntegerField(required=True)
     class Meta:
         model = Program
-        fields = ('id', 'profile', 'annotation', 'level', 'direction', 'form', 'participants','my_role','authorId', 'type')
+        fields = ('id', 'profile', 'annotation', 'level', 'direction', 'form', 'participants','my_role','authorId', 'type',
+                  'max_semesters')
 
     def validate(self, attrs):
         direction_data = self.initial_data.get('direction')

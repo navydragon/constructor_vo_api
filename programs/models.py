@@ -62,6 +62,7 @@ class Program(models.Model):
         default='Очная'
     )
     max_semesters = models.PositiveIntegerField(null=True)
+
     class Meta:
         db_table = 'programs'
 
