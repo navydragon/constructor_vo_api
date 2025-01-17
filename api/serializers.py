@@ -89,10 +89,11 @@ class ProgramInformationSerializer(serializers.ModelSerializer):
     direction = EducationDirectionSerializer(source='direction_id')
     authorId = serializers.IntegerField(source='author_id', read_only=True)
     type = serializers.IntegerField()
+    max_semesters = serializers.IntegerField()
 
     class Meta:
         model = Program
-        fields = ('id', 'profile','form', 'annotation','participants', 'direction', 'level','name', 'authorId', 'my_role','type')
+        fields = ('id', 'profile','form', 'annotation','participants', 'direction', 'level','name', 'authorId', 'my_role','type','max_semesters')
 
     def get_name(self, obj):
         return f"{obj.direction_id.code} {obj.direction_id.name} {obj.profile} ({obj.level_id.name})"
